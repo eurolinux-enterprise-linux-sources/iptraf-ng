@@ -1,7 +1,7 @@
 Summary:        A console-based network monitoring utility
 Name:           iptraf-ng
 Version:        1.1.4
-Release:        2%{?dist}
+Release:        4%{?dist}
 Source0:        https://fedorahosted.org/releases/i/p/iptraf-ng/%{name}-%{version}.tar.gz
 Source1:        iptraf-ng-logrotate.conf
 URL:            https://fedorahosted.org/iptraf-ng/
@@ -66,6 +66,12 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/logrotate.d/iptraf-ng
 
 %changelog
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.1.4-4
+- Mass rebuild 2014-01-24
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 1.1.4-3
+- Mass rebuild 2013-12-27
+
 * Mon Sep 02 2013 Nikola Pajkovsky <npajkovs@redhat.com> - 1.1.4-2
 - 9b32013 BUGFIX: fix "Floating point exception" in tcplog_flowrate_msg() (Vitezslav Samel)
 
