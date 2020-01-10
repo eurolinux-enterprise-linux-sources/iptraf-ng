@@ -1,26 +1,27 @@
 Summary:        A console-based network monitoring utility
 Name:           iptraf-ng
 Version:        1.1.4
-Release:        6%{?dist}
-Source0:        https://fedorahosted.org/releases/i/p/iptraf-ng/%{name}-%{version}.tar.gz
+Release:        7%{?dist}
+Source0:        https://github.com/iptraf-ng/iptraf-ng/archive/v%{version}.tar.gz
 Source1:        %{name}-logrotate.conf
 Source2:        %{name}-tmpfiles.conf
-URL:            https://fedorahosted.org/iptraf-ng/
+URL:            https://github.com/iptraf-ng/iptraf-ng/
 License:        GPLv2+
 Group:          Applications/System
+BuildRequires:  gcc
 BuildRequires:  ncurses-devel
 Obsoletes:      iptraf < 3.1
 Provides:       iptraf = 3.1
 Patch01:        0001-BUGFIX-fix-Floating-point-exception-in-tcplog_flowra.patch
 Patch02:        0002-Makefile-add-Werror-format-security.patch
-Patch03:        0001-fix-segfault-in-adding-interface.patch
+Patch03:        0003-fix-segfault-in-adding-interface.patch
 
 %description
 IPTraf-ng is a console-based network monitoring utility.  IPTraf gathers
 data like TCP connection packet and byte counts, interface statistics
 and activity indicators, TCP/UDP traffic breakdowns, and LAN station
 packet and byte counts.  IPTraf-ng features include an IP traffic monitor
-which shows TCP olag information, packet and byte counts, ICMP
+which shows TCP flag information, packet and byte counts, ICMP
 details, OSPF packet types, and oversized IP packet warnings;
 interface statistics showing IP, TCP, UDP, ICMP, non-IP and other IP
 packet counts, IP checksum errors, interface activity and packet size
@@ -60,9 +61,6 @@ install -m 0644 %{SOURCE2} %{buildroot}%{_prefix}/lib/tmpfiles.d/%{name}.conf
 mkdir -p %{buildroot}/run
 install -d -m 0755 %{buildroot}/run/%{name}/
 
-%clean
-rm -rf %{buildroot}
-
 %files
 %defattr(-,root,root,-)
 %doc CHANGES FAQ LICENSE README* RELEASE-NOTES
@@ -78,6 +76,13 @@ rm -rf %{buildroot}
 %{_prefix}/lib/tmpfiles.d/%{name}.conf
 
 %changelog
+* Mon Apr 09 2018 Phil Cameron <pcameron@redhat.com> - 1.1.4-7
+- Fixes error in patch Patch03 - this fixes 1283773 and 1539081
+  1501821 - Upstream moved to https://github.com/iptraf-ng/iptraf-ng/
+  1020552, 1372679 - fix missing /var/lock/iptraf-ng file
+  Add BuildRequires:  gcc to spec file.
+  1109768 - bad configuration logrotate
+
 * Fri Apr 15 2016 Phil Cameron <pcameron@redhat.com> - 1.1.4-6
 - fix 1283773 - segfault in rate_add_rate
 
