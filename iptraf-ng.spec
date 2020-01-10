@@ -1,9 +1,10 @@
 Summary:        A console-based network monitoring utility
 Name:           iptraf-ng
 Version:        1.1.4
-Release:        4%{?dist}
+Release:        6%{?dist}
 Source0:        https://fedorahosted.org/releases/i/p/iptraf-ng/%{name}-%{version}.tar.gz
-Source1:        iptraf-ng-logrotate.conf
+Source1:        %{name}-logrotate.conf
+Source2:        %{name}-tmpfiles.conf
 URL:            https://fedorahosted.org/iptraf-ng/
 License:        GPLv2+
 Group:          Applications/System
@@ -11,13 +12,15 @@ BuildRequires:  ncurses-devel
 Obsoletes:      iptraf < 3.1
 Provides:       iptraf = 3.1
 Patch01:        0001-BUGFIX-fix-Floating-point-exception-in-tcplog_flowra.patch
+Patch02:        0002-Makefile-add-Werror-format-security.patch
+Patch03:        0001-fix-segfault-in-adding-interface.patch
 
 %description
 IPTraf-ng is a console-based network monitoring utility.  IPTraf gathers
 data like TCP connection packet and byte counts, interface statistics
 and activity indicators, TCP/UDP traffic breakdowns, and LAN station
 packet and byte counts.  IPTraf-ng features include an IP traffic monitor
-which shows TCP flag information, packet and byte counts, ICMP
+which shows TCP olag information, packet and byte counts, ICMP
 details, OSPF packet types, and oversized IP packet warnings;
 interface statistics showing IP, TCP, UDP, ICMP, non-IP and other IP
 packet counts, IP checksum errors, interface activity and packet size
@@ -33,9 +36,11 @@ on a wide variety of supported network cards.
 %prep
 %setup -q
 %patch01 -p1
+%patch02 -p1
+%patch03 -p1
 
 %build
-make %{?_smp_mflags} V=1 CFLAGS="-g -O2 -Wall -W -std=gnu99 %{optflags}"
+make %{?_smp_mflags} V=1 CFLAGS="-g -O2 -Wall -W -std=gnu99 -Werror=format-security %{optflags}"
 
 %install
 rm -rf %{buildroot}
@@ -47,7 +52,13 @@ find Documentation -type f | grep -v '\.html$\|\.png$\|/stylesheet' | \
 
 install -D -m 0644 -p %{SOURCE1} %{buildroot}%{_sysconfdir}/logrotate.d/iptraf-ng
 
-install -d -m 0755 %{buildroot}%{_localstatedir}/{lock,log,lib}/iptraf-ng
+install -d -m 0755 %{buildroot}%{_localstatedir}/{log,lib}/iptraf-ng
+
+mkdir -p %{buildroot}%{_prefix}/lib/tmpfiles.d
+install -m 0644 %{SOURCE2} %{buildroot}%{_prefix}/lib/tmpfiles.d/%{name}.conf
+
+mkdir -p %{buildroot}/run
+install -d -m 0755 %{buildroot}/run/%{name}/
 
 %clean
 rm -rf %{buildroot}
@@ -60,12 +71,27 @@ rm -rf %{buildroot}
 %{_sbindir}/rvnamed-ng
 %{_mandir}/man8/iptraf-ng.8*
 %{_mandir}/man8/rvnamed-ng.8*
-%{_localstatedir}/lock/iptraf-ng
 %{_localstatedir}/log/iptraf-ng
 %{_localstatedir}/lib/iptraf-ng
 %config(noreplace) %{_sysconfdir}/logrotate.d/iptraf-ng
+%dir /run/%{name}/
+%{_prefix}/lib/tmpfiles.d/%{name}.conf
 
 %changelog
+* Fri Apr 15 2016 Phil Cameron <pcameron@redhat.com> - 1.1.4-6
+- fix 1283773 - segfault in rate_add_rate
+
+  Jun 17 2014 Alejandro Pérez  <aeperezt@fedoraproject.org>
+  fix 1109768 bad configuration logrotate
+  Mar 02 2014 Alejandro Pérez  <aeperezt@fedoraproject.org>
+  fix bug 1020552 - rpm report /var/lock/ipraf-ng is missing
+  added missing file iptraf-nf-tmpfiles.conf
+  Dec 03 2013 Nikola Pajkovsky <npajkovs@redhat.com>
+  Fedora start using -Werror=format-security and iptraf-ng had some
+  parts where error compilation was trigged.
+  202b2e7b27a1 Makefile: add -Werror=format-security
+  Resolved: #1037133
+
 * Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.1.4-4
 - Mass rebuild 2014-01-24
 
@@ -99,8 +125,8 @@ rm -rf %{buildroot}
 * Thu Feb 02 2012 Nikola Pajkovsky <npajkovs@redhat.com> - 1.1.1-1
 - new upstream iptraf-ng-1.1.1
 
-* Mon Jan 16 2011 Nikola Pajkovsky <npajkovs@redhat.com> - 1.1.0-2
+* Sun Jan 16 2011 Nikola Pajkovsky <npajkovs@redhat.com> - 1.1.0-2
 - fix wrongly used execl
 
-* Wed Jan 11 2011 Nikola Pajkovsky <npajkovs@redhat.com> - 1.1.0-1
+* Tue Jan 11 2011 Nikola Pajkovsky <npajkovs@redhat.com> - 1.1.0-1
 - Initialization build
